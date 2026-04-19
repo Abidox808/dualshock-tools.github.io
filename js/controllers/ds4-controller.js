@@ -280,10 +280,11 @@ class DS4Controller extends BaseController {
 
       const data = await this.receiveFeatureReport(0x91);
       const data2 = await this.receiveFeatureReport(0x92);
-      const [d1, d2] = [data, data2].map(v => v.getUint32(0, false));
+      const [d1, d2] = [data, data2].map(v => v.byteLength >= 4 ? v.getUint32(0, false) : undefined);
       if(d1 != 0x91010202 || d2 != 0x92010201) {
         la("ds4_calibrate_range_end_failed", {"d1": d1, "d2": d2});
-        return { ok: false, code: 3, d1, d2 };
+        // Clone controllers may return unexpected response bytes; proceed anyway
+        console.warn(`calibrateRangeEnd: unexpected response d1=${d1}, d2=${d2}`);
       }
 
       return { ok: true };

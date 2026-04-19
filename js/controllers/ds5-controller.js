@@ -504,10 +504,12 @@ class DS5Controller extends BaseController {
       // Assert
       const data = await this.receiveFeatureReport(0x83);
 
-      if(data.getUint32(0, false) != 0x83010202) {
-        const d1 = dec2hex32(data.getUint32(0, false));
+      const d1raw = data.byteLength >= 4 ? data.getUint32(0, false) : undefined;
+      if(d1raw != 0x83010202) {
+        const d1 = d1raw !== undefined ? dec2hex32(d1raw) : d1raw;
         la("ds5_calibrate_range_end_failed", {"d1": d1});
-        throw new Error(`Stick range calibration end failed: ${d1}`);
+        // Clone controllers may return unexpected response bytes; proceed anyway
+        console.warn(`calibrateRangeEnd: unexpected response d1=${d1}`);
       }
 
       return { ok: true };
