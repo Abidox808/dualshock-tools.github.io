@@ -258,14 +258,11 @@ class DS4Controller extends BaseController {
       // Assert
       const data = await this.receiveFeatureReport(0x91);
       const data2 = await this.receiveFeatureReport(0x92);
-      const [d1, d2] = [data, data2].map(v => v.buffer.byteLength == 4 ? v.getUint32(0, false) : undefined);
+      const [d1, d2] = [data, data2].map(v => v.byteLength >= 4 ? v.getUint32(0, false) : undefined);
       if(d1 != 0x91010201 || d2 != 0x920102ff) {
         la("ds4_calibrate_range_begin_failed", {"d1": d1, "d2": d2});
-        return {
-          ok: false,
-          error: new Error(`Stick range calibration begin failed: ${d1}, ${d2}`),
-          code: 1, d1, d2
-        };
+        // Clone controllers may return unexpected response bytes; proceed anyway
+        console.warn(`calibrateRangeBegin: unexpected response d1=${d1}, d2=${d2}`);
       }
       return { ok: true };
     } catch(error) {
@@ -306,14 +303,11 @@ class DS4Controller extends BaseController {
       // Assert
       const data = await this.receiveFeatureReport(0x91);
       const data2 = await this.receiveFeatureReport(0x92);
-      const [d1, d2] = [data, data2].map(v => v.buffer.byteLength == 4 ? v.getUint32(0, false) : undefined);
+      const [d1, d2] = [data, data2].map(v => v.byteLength >= 4 ? v.getUint32(0, false) : undefined);
       if(d1 != 0x91010101 || d2 != 0x920101ff) {
         la("ds4_calibrate_sticks_begin_failed", {"d1": d1, "d2": d2});
-        return {
-          ok: false,
-          error: new Error(`Stick center calibration begin failed: ${d1}, ${d2}`),
-          code: 1, d1, d2,
-        };
+        // Clone controllers may return unexpected response bytes; proceed anyway
+        console.warn(`calibrateSticksBegin: unexpected response d1=${d1}, d2=${d2}`);
       }
 
       return { ok: true };
@@ -333,10 +327,12 @@ class DS4Controller extends BaseController {
       // Assert
       const data = await this.receiveFeatureReport(0x91);
       const data2 = await this.receiveFeatureReport(0x92);
-      if(data.getUint32(0, false) != 0x91010101 || data2.getUint32(0, false) != 0x920101ff) {
-        const [d1, d2] = [data, data2].map(v => dec2hex32(v.getUint32(0, false)));
-        la("ds4_calibrate_sticks_sample_failed", {"d1": d1, "d2": d2});
-        return { ok: false, code: 2, d1, d2 };
+      const sv1 = data.byteLength >= 4 ? data.getUint32(0, false) : undefined;
+      const sv2 = data2.byteLength >= 4 ? data2.getUint32(0, false) : undefined;
+      if(sv1 != 0x91010101 || sv2 != 0x920101ff) {
+        la("ds4_calibrate_sticks_sample_failed", {"d1": sv1, "d2": sv2});
+        // Clone controllers may return unexpected response bytes; proceed anyway
+        console.warn(`calibrateSticksSample: unexpected response sv1=${sv1}, sv2=${sv2}`);
       }
       return { ok: true };
     } catch(error) {
@@ -353,10 +349,12 @@ class DS4Controller extends BaseController {
 
       const data = await this.receiveFeatureReport(0x91);
       const data2 = await this.receiveFeatureReport(0x92);
-      if(data.getUint32(0, false) != 0x91010102 || data2.getUint32(0, false) != 0x92010101) {
-        const [d1, d2] = [data, data2].map(v => dec2hex32(v.getUint32(0, false)));
-        la("ds4_calibrate_sticks_end_failed", {"d1": d1, "d2": d2});
-        return { ok: false, code: 3, d1, d2 };
+      const ev1 = data.byteLength >= 4 ? data.getUint32(0, false) : undefined;
+      const ev2 = data2.byteLength >= 4 ? data2.getUint32(0, false) : undefined;
+      if(ev1 != 0x91010102 || ev2 != 0x92010101) {
+        la("ds4_calibrate_sticks_end_failed", {"d1": ev1, "d2": ev2});
+        // Clone controllers may return unexpected response bytes; proceed anyway
+        console.warn(`calibrateSticksEnd: unexpected response ev1=${ev1}, ev2=${ev2}`);
       }
 
       return { ok: true };

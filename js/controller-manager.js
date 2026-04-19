@@ -4,7 +4,7 @@ import { sleep, la } from './utils.js';
 import { l } from './translations.js';
 import { Storage } from './storage.js';
 
-const NOT_GENUINE_SONY_CONTROLLER_MSG = "Your device might not be a genuine Sony controller. If it is not a clone then please report this issue.";
+const NOT_GENUINE_SONY_CONTROLLER_MSG = "Calibration failed to start. Your controller may not be compatible. If you believe this is an error, please report this issue.";
 
 /**
 * Controller Manager - Manages the current controller instance and provides unified interface
